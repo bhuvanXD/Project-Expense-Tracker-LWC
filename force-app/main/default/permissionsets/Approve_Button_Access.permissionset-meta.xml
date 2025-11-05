@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customPermissions>
+        <enabled>true</enabled>
+        <name>Can_View_Special_Button</name>
+    </customPermissions>
+    <description>this provides approve button access to a user.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Approve Button Access</label>
+</PermissionSet>
