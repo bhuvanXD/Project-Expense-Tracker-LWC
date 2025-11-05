@@ -1,0 +1,42 @@
+<template>
+    <lightning-card title="Projects & Expenses">
+
+        <!-- 🔍 SEARCH BAR -->
+        <div class="slds-p-around_small">
+            <lightning-input 
+                type="search"
+                label="Search Projects"
+                placeholder="Search by Project Name..."
+                value={searchKey}
+                onchange={handleSearch}>
+            </lightning-input>
+        </div>
+
+        <!-- MAIN PROJECT TABLE -->
+        <c-custom-datatable-comp
+            key-field="Id"
+            data={filteredProjects}
+            columns={columns}
+            hide-checkbox-column
+            onrowaction={handleRowAction}>
+        </c-custom-datatable-comp>
+
+        <!-- CHILD EXPENSE TABLE -->
+        <template if:true={expandedProjectId}>
+            <div class="slds-m-top_medium slds-box slds-theme_shade">
+                <h3 class="slds-text-heading_small slds-m-bottom_small">
+                    Related Expenses
+                </h3>
+
+                <c-custom-datatable-comp
+                    key-field="Id"
+                    data={expandedExpenses}
+                    columns={expenseColumns}
+                    hide-checkbox-column
+                    onrowaction={handleRowAction}>
+                </c-custom-datatable-comp>
+            </div>
+        </template>
+
+    </lightning-card>
+</template>
