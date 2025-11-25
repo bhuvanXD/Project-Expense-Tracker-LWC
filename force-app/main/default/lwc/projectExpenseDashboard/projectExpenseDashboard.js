@@ -4,15 +4,16 @@ import getExpensesByProject from '@salesforce/apex/ProjectExpenseController.getE
 import approveExpense from '@salesforce/apex/ProjectExpenseController.approveExpense';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import hasCustomPermission from '@salesforce/customPermission/Can_View_Special_Button';
-
+ 
 export default class ProjectExpenseDashboard extends LightningElement {
-    projects;
-    error;
-    expandedProjectId = null;
+    projects; // stores all projects
+    error; // stores error information
+    expandedProjectId = null; // currently expanded project
     expensesMap = {};   // stores expenses by project
-    searchKey = '';
-    hasPermission = hasCustomPermission; // ✅ Boolean value for permission
-
+    searchKey = ''; // search key for filtering projects
+    hasPermission = hasCustomPermission; // custom permission check
+ 
+    //column definitions for project table
     columns = [
         {
             label: 'Project Name',
@@ -30,34 +31,9 @@ export default class ProjectExpenseDashboard extends LightningElement {
         { label: 'Budget Percent', fieldName: 'BudgetUsedPercent', type: 'progressBar' },
         { label: 'Status', fieldName: 'Status' }
     ];
-
-    expenseColumns = [];
-
-    // ✅ Dynamically add Approve button only if permission is true
-    connectedCallback() {
-        this.expenseColumns = [
-            { label: 'Name', fieldName: 'Name' },
-            { label: 'Amount', fieldName: 'Expense_Amount__c', type: 'currency' },
-            { label: 'Date', fieldName: 'Expense_Date__c', type: 'date' },
-            { label: 'Type', fieldName: 'Expense_Type__c' },
-            { label: 'Project Name', fieldName: 'projectName' },
-            { label: 'Approved', fieldName: 'Approved__c', type: 'boolean' }
-        ];
-
-        if (this.hasPermission) {
-            this.expenseColumns.push({
-                label: 'Approve or Not',
-                type: 'button',
-                typeAttributes: {
-                    label: 'Approve',
-                    name: 'approve_expense',
-                    variant: 'brand',
-                    disabled: { fieldName: 'Approved__c' } 
-                }
-            });
-        }
-    }
-
+ 
+    expenseColumns = []; // column definitions for expense table
+ 
     @wire(getAllProjects)
     wiredProjects({ error, data }) {
         if (data) {
@@ -68,39 +44,63 @@ export default class ProjectExpenseDashboard extends LightningElement {
             this.projects = undefined;
         }
     }
-
+ 
     handleRowAction(event) {
         const { action, row } = event.detail;
-
+        
         if (action.name === 'view_project') {
             this.toggleExpenses(row.Id);
         }
-
+ 
         if (action.name === 'approve_expense') {
             this.approve(row.Id);
         }
     }
-
+ 
     toggleExpenses(projectId) {
+
+        this.expenseColumns = [
+            { label: 'Name', fieldName: 'Name' },
+            { label: 'Amount', fieldName: 'Expense_Amount__c', type: 'currency' },
+            { label: 'Date', fieldName: 'Expense_Date__c', type: 'date' },
+            { label: 'Type', fieldName: 'Expense_Type__c' },
+            { label: 'Project Name', fieldName: 'projectName' },
+            { label: 'Approved', fieldName: 'Approved__c', type: 'boolean' }
+        ];
+ 
+        if (this.hasPermission) {
+            this.expenseColumns.push({
+                label: 'Approve or Not',
+                type: 'button',
+                typeAttributes: {
+                    label: 'Approve',
+                    name: 'approve_expense',
+                    variant: 'brand',
+                    disabled: { fieldName: 'Approved__c' }
+                }
+            });
+        }
+
         if (this.expandedProjectId === projectId) {
             this.expandedProjectId = null;
             return;
         }
-
+ 
         this.expandedProjectId = projectId;
-
+ 
         if (!this.expensesMap[projectId]) {
             getExpensesByProject({ projectId })
                 .then(result => {
                     const projectName = result?.[0]?.Project__r?.Name || '';
-
+ 
                     const expensesWithProjectName = result.map(exp => ({
                         ...exp,
                         projectName
                     }));
-
+ 
+                   
                     this.expensesMap = { ...this.expensesMap, [projectId]: expensesWithProjectName };
-
+ 
                     console.log('Project:', projectName);
                     console.log('Expenses:', expensesWithProjectName);
                 })
@@ -109,7 +109,7 @@ export default class ProjectExpenseDashboard extends LightningElement {
                 });
         }
     }
-
+ 
     approve(expenseId) {
         approveExpense({ expenseId })
             .then(() => {
@@ -129,18 +129,19 @@ export default class ProjectExpenseDashboard extends LightningElement {
                 this.dispatchEvent(toastEvent);
             });
     }
-
+ 
     get expandedExpenses() {
         return this.expensesMap[this.expandedProjectId] || [];
     }
-
+ 
     get filteredProjects() {
         return this.projects?.filter(p =>
             p.Name?.toLowerCase().includes(this.searchKey.toLowerCase())
         ) || [];
     }
-
+ 
     handleSearch(e) {
         this.searchKey = e.target.value;
     }
 }
+ 

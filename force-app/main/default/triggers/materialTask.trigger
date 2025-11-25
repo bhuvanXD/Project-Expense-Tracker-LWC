@@ -20,7 +20,7 @@
 trigger materialTask on Expense__c (before insert, before update) {
     for (Expense__c e : Trigger.new) {
         if (e.Expense_Amount__c < 5000 && e.Expense_Type__c == 'Material') {
-            // Only set true automatically if user hasn't manually unchecked it
+            
             if (Trigger.isInsert || !Trigger.oldMap.get(e.Id).Approved__c) {
                 e.Approved__c = true;
             }

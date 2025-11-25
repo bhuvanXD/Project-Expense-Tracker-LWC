@@ -11,5 +11,6 @@ export default class CustomDatatableComp extends LightningDatatable {
 
 }
 
-//resources used: https://developer.salesforce.com/docs/platform/lwc/guide/data-table-custom-types.html
+//resources used:
+//  https://developer.salesforce.com/docs/platform/lwc/guide/data-table-custom-types.html
 //https://varasi.com/display-custom-data-type-in-salesforce-lightning-datatable/ 
